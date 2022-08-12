@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { makeStyles } from "@mui/styles";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
@@ -27,6 +27,11 @@ const useStyles = makeStyles({
   email: {
     marginBottom: "20px",
   },
+  emailErr: {
+    color: "red",
+    marginTop: "10px",
+    fontSize: "12px",
+  },
   name: {
     display: "flex",
     justifyContent: "space-between",
@@ -40,40 +45,123 @@ const useStyles = makeStyles({
 
 function Form() {
   const styles = useStyles();
+
+  const [values, setValues] = useState({
+    fName: "",
+    lName: "",
+    desc: "",
+    email: "",
+  });
+
+  const [submitted, setSubmitted] = useState(false);
+  const [emailError, setEmailError] = useState({});
+  console.log("emailError", emailError);
+
+  function handleFName(e) {
+    setValues({ ...values, fName: e.target.value });
+  }
+
+  function handleLName(e) {
+    setValues({ ...values, lName: e.target.value });
+  }
+
+  function handleDesc(e) {
+    setValues({ ...values, desc: e.target.value });
+  }
+
+  function handleEmail(e) {
+    setValues({ ...values, email: e.target.value });
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    setEmailError(validate(values));
+    setSubmitted(true);
+  }
+
+  function validate(values) {
+    console.log("values", values);
+    const error = {};
+    console.log("error", error);
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+    if (!regex.test(values.email)) {
+      error.email = "Invalid email format";
+    }
+    return error;
+  }
+
   return (
     <div className={styles.centered}>
+      {submitted && Object.keys(emailError).length === 0 ? (
+        <div>Email is successfully sent</div>
+      ) : null}
       <div className={styles.title}>
         <h3>Simple Form</h3>
       </div>
-      <div className={styles.container}>
+      <form className={styles.container} onSubmit={handleSubmit}>
         <div className={styles.name}>
-          <TextField required id="outlined-required" label="First Name" />
-          <TextField required id="outlined-required" label="Last Name" />
+          <TextField
+            required
+            id="outlined-required"
+            name="firstName"
+            label="First Name"
+            value={values.fName}
+            onChange={handleFName}
+          />
+          <TextField
+            required
+            id="outlined-required"
+            name="lastName"
+            label="Last Name"
+            value={values.lName}
+            onChange={handleLName}
+          />
         </div>
         <div className={styles.desc}>
           <TextField
             id="outlined-multiline-static"
+            name="desc"
             label="Description"
             multiline
             rows={4}
+            required
             fullWidth
+            value={values.desc}
+            onChange={handleDesc}
           />
         </div>
         <div className={styles.email}>
-          <TextField id="outlined-required" label="Email" fullWidth />
+          <TextField
+            id="outlined-required"
+            name="email"
+            label="Email"
+            required
+            fullWidth
+            value={values.email}
+            onChange={handleEmail}
+          />
+          <p className={styles.emailErr}>{emailError.email}</p>
         </div>
-      </div>
-      <div className={styles.btn}>
-        <IconButton
-          color="primary"
-          aria-label="upload picture"
-          component="label"
-        >
-          <input hidden accept="image/*" type="file" />
-          <AddPhotoAlternateIcon />
-        </IconButton>
-        <Button variant="contained">Send</Button>
-      </div>
+        <div className={styles.btn}>
+          <IconButton
+            color="primary"
+            aria-label="upload picture"
+            component="label"
+          >
+            <input hidden accept="image/*" type="file" />
+            <AddPhotoAlternateIcon />
+          </IconButton>
+          {values.fName && values.lName && values.desc && values.email ? (
+            <Button variant="contained" type="submit">
+              Send
+            </Button>
+          ) : (
+            <Button disabled variant="contained" type="submit">
+              Send
+            </Button>
+          )}
+        </div>
+      </form>
     </div>
   );
 }
