@@ -6,8 +6,12 @@ import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import LinearProgress from "@mui/material/LinearProgress";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
+import CloseIcon from "@mui/icons-material/Close";
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
   root: {},
   btn: {
     display: "flex",
@@ -17,8 +21,12 @@ const useStyles = makeStyles({
     margin: "100px auto",
     width: "600px",
     backgroundColor: "#fcfcfc",
+    borderRadius: "10px",
     padding: "20px 50px 40px",
     boxShadow: "1px 4px 10px 1px #aaa",
+    fontFamily: "Ubuntu",
+    fontWeight: "Bold",
+    color: "#484848",
   },
   container: {
     width: "100%",
@@ -37,7 +45,7 @@ const useStyles = makeStyles({
   loadingTitle: {
     display: "flex",
     justifyContent: "center",
-    fontSize: "20px",
+    fontSize: "24px",
     color: "white",
   },
   linearBar: {
@@ -63,19 +71,16 @@ const useStyles = makeStyles({
     display: "flex",
     justifyContent: "center",
   },
-});
+}));
 
 function Form() {
   const styles = useStyles();
-
   const [values, setValues] = useState({
     fName: "",
     lName: "",
     desc: "",
     email: "",
   });
-
-  const [submitted, setSubmitted] = useState(false);
 
   // email validation
   const [email, setEmail] = useState("");
@@ -89,6 +94,10 @@ function Form() {
   const [loading, setLoading] = useState(false);
   const timer = React.useRef();
 
+  // email sent pop-up
+  const [submitted, setSubmitted] = useState(false);
+
+  // create img url for selected img
   useEffect(() => {
     if (selectedImg) {
       setImageUrl(URL.createObjectURL(selectedImg));
@@ -148,9 +157,53 @@ function Form() {
           </div>
         </div>
       )}
+
+      {submitted && (
+        <div className={styles.overlay}>
+          <Card
+            sx={{
+              width: "30%",
+              margin: "270px auto",
+              borderRadius: "10px",
+              boxShadow: "1px 4px 10px 1px #484848",
+            }}
+          >
+            <CardContent>
+              <Typography
+                className={styles.emailNoticeTitle}
+                variant="h6"
+                component="div"
+                sx={{
+                  display: "flex",
+                  fontFamily: "Ubuntu",
+                  fontWeight: "Bold",
+                  color: "#484848",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                Email Sent
+                <CloseIcon />
+              </Typography>
+
+              <Typography
+                sx={{
+                  fontFamily: "Ubuntu",
+                  color: "#484848",
+                  marginTop: "15px",
+                }}
+              >
+                🎉 Email is successfully sent, please check your inbox for the
+                form details.
+              </Typography>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* form component */}
       <div className={styles.formTitle}>
-        <h3>Simple Form</h3>
+        <h2>Simple Form</h2>
       </div>
       <form className={styles.container} onSubmit={handleSubmit}>
         <div className={styles.name}>
