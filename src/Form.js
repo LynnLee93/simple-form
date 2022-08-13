@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { makeStyles } from "@mui/styles";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 
@@ -54,8 +55,17 @@ function Form() {
   });
 
   const [submitted, setSubmitted] = useState(false);
-  const [emailError, setEmailError] = useState({});
-  console.log("emailError", emailError);
+
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState(null);
+  const [selectedImg, setSelectedImg] = useState(null);
+  const [imageUrl, setImageUrl] = useState(null);
+
+  useEffect(() => {
+    if (selectedImg) {
+      setImageUrl(URL.createObjectURL(selectedImg));
+    }
+  }, [selectedImg]);
 
   function handleFName(e) {
     setValues({ ...values, fName: e.target.value });
@@ -69,39 +79,32 @@ function Form() {
     setValues({ ...values, desc: e.target.value });
   }
 
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email);
+  }
+
   function handleEmail(e) {
-    setValues({ ...values, email: e.target.value });
+    if (!isValidEmail(e.target.value)) {
+      setError("Invalid email format");
+    } else {
+      setError(null);
+    }
+    setEmail(e.target.value);
   }
 
   function handleSubmit(e) {
     e.preventDefault();
-    setEmailError(validate(values));
     setSubmitted(true);
-  }
-
-  function validate(values) {
-    console.log("values", values);
-    const error = {};
-    console.log("error", error);
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
-    if (!regex.test(values.email)) {
-      error.email = "Invalid email format";
-    }
-    return error;
   }
 
   return (
     <div className={styles.centered}>
-      {submitted && Object.keys(emailError).length === 0 ? (
-        <div>Email is successfully sent</div>
-      ) : null}
       <div className={styles.title}>
         <h3>Simple Form</h3>
       </div>
       <form className={styles.container} onSubmit={handleSubmit}>
         <div className={styles.name}>
           <TextField
-            required
             id="outlined-required"
             name="firstName"
             label="First Name"
@@ -109,7 +112,6 @@ function Form() {
             onChange={handleFName}
           />
           <TextField
-            required
             id="outlined-required"
             name="lastName"
             label="Last Name"
@@ -124,7 +126,6 @@ function Form() {
             label="Description"
             multiline
             rows={4}
-            required
             fullWidth
             value={values.desc}
             onChange={handleDesc}
@@ -135,23 +136,36 @@ function Form() {
             id="outlined-required"
             name="email"
             label="Email"
-            required
             fullWidth
-            value={values.email}
+            value={email}
             onChange={handleEmail}
           />
-          <p className={styles.emailErr}>{emailError.email}</p>
+          {error && <p className={styles.emailErr}>{error}</p>}
         </div>
+
+        {imageUrl && selectedImg && (
+          <Box mt={2} textAlign="start">
+            <img src={imageUrl} alt={selectedImg.name} height="200px" />
+          </Box>
+        )}
+
         <div className={styles.btn}>
           <IconButton
+            htmlFor="select-img"
             color="primary"
             aria-label="upload picture"
             component="label"
           >
-            <input hidden accept="image/*" type="file" />
+            <input
+              hidden
+              id="select-img"
+              accept="image/*"
+              type="file"
+              onChange={(e) => setSelectedImg(e.target.files[0])}
+            />
             <AddPhotoAlternateIcon />
           </IconButton>
-          {values.fName && values.lName && values.desc && values.email ? (
+          {values.fName && values.lName && values.desc && email && !error ? (
             <Button variant="contained" type="submit">
               Send
             </Button>
