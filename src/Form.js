@@ -5,12 +5,13 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import LinearProgress from "@mui/material/LinearProgress";
 
 const useStyles = makeStyles({
   root: {},
-  title: {
+  btn: {
     display: "flex",
-    justifyContent: "center",
+    justifyContent: "flex-end",
   },
   centered: {
     margin: "100px auto",
@@ -33,14 +34,34 @@ const useStyles = makeStyles({
     marginTop: "10px",
     fontSize: "12px",
   },
+  loadingTitle: {
+    display: "flex",
+    justifyContent: "center",
+    fontSize: "20px",
+    color: "white",
+  },
+  linearBar: {
+    margin: "300px auto",
+    width: "20%",
+  },
   name: {
     display: "flex",
     justifyContent: "space-between",
     marginBottom: "20px",
   },
-  btn: {
+  overlay: {
+    position: "fixed",
+    zIndex: "999" /* Sit on top */,
+    left: "0",
+    top: "0",
+    width: "100%",
+    height: "100%",
+    overflow: "auto" /* Enable scroll if needed */,
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+  },
+  formTitle: {
     display: "flex",
-    justifyContent: "flex-end",
+    justifyContent: "center",
   },
 });
 
@@ -56,10 +77,17 @@ function Form() {
 
   const [submitted, setSubmitted] = useState(false);
 
+  // email validation
   const [email, setEmail] = useState("");
   const [error, setError] = useState(null);
+
+  // uoload image
   const [selectedImg, setSelectedImg] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
+
+  // uploading form
+  const [loading, setLoading] = useState(false);
+  const timer = React.useRef();
 
   useEffect(() => {
     if (selectedImg) {
@@ -92,14 +120,36 @@ function Form() {
     setEmail(e.target.value);
   }
 
+  useEffect(() => {
+    return () => {
+      clearTimeout(timer.current);
+    };
+  }, []);
+
   function handleSubmit(e) {
     e.preventDefault();
-    setSubmitted(true);
+    if (!loading) {
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setLoading(false);
+        setSubmitted(true);
+      }, 3000);
+    }
   }
 
   return (
     <div className={styles.centered}>
-      <div className={styles.title}>
+      {/* uploading form component */}
+      {loading && (
+        <div className={styles.overlay}>
+          <div className={styles.linearBar}>
+            <p className={styles.loadingTitle}>Uploading Form</p>
+            <LinearProgress />
+          </div>
+        </div>
+      )}
+      {/* form component */}
+      <div className={styles.formTitle}>
         <h3>Simple Form</h3>
       </div>
       <form className={styles.container} onSubmit={handleSubmit}>
