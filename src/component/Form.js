@@ -1,34 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { makeStyles } from "@mui/styles";
-import {
-  TextField,
-  Button,
-  Box,
-  IconButton,
-  LinearProgress,
-  Card,
-  CardContent,
-  Typography,
-} from "@mui/material";
+import { TextField, Button, IconButton, Box } from "@mui/material";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
-import CloseIcon from "@mui/icons-material/Close";
+import Header from "./Header";
+import EmailNotice from "./EmailNotice";
+import ProgressBar from "./ProgressBar";
 
 const useStyles = makeStyles((theme) => ({
   root: {},
   btn: {
     display: "flex",
     justifyContent: "flex-end",
-  },
-  centered: {
-    margin: "100px auto",
-    width: "600px",
-    backgroundColor: "#fcfcfc",
-    borderRadius: "10px",
-    padding: "20px 50px 40px",
-    boxShadow: "1px 4px 10px 1px #aaa",
-    fontFamily: "Ubuntu",
-    fontWeight: "Bold",
-    color: "#484848",
   },
   container: {
     width: "100%",
@@ -44,34 +26,10 @@ const useStyles = makeStyles((theme) => ({
     marginTop: "10px",
     fontSize: "12px",
   },
-  loadingTitle: {
-    display: "flex",
-    justifyContent: "center",
-    fontSize: "24px",
-    color: "white",
-  },
-  linearBar: {
-    margin: "300px auto",
-    width: "20%",
-  },
   name: {
     display: "flex",
     justifyContent: "space-between",
     marginBottom: "20px",
-  },
-  overlay: {
-    position: "fixed",
-    zIndex: "999" /* Sit on top */,
-    left: "0",
-    top: "0",
-    width: "100%",
-    height: "100%",
-    overflow: "auto" /* Enable scroll if needed */,
-    backgroundColor: "rgba(0, 0, 0, 0.4)",
-  },
-  formTitle: {
-    display: "flex",
-    justifyContent: "center",
   },
 }));
 
@@ -85,8 +43,7 @@ function Form() {
   });
 
   // email validation
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState(null);
+  const [emailError, setEmailError] = useState(null);
 
   // uoload image
   const [selectedImg, setSelectedImg] = useState(null);
@@ -118,17 +75,18 @@ function Form() {
     setValues({ ...values, desc: e.target.value });
   }
 
-  function isValidEmail(email) {
+  function isValidEmail(values) {
+    const email = values;
     return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email);
   }
 
   function handleEmail(e) {
     if (!isValidEmail(e.target.value)) {
-      setError("Invalid email format");
+      setEmailError("Invalid email format");
     } else {
-      setError(null);
+      setEmailError(null);
     }
-    setEmail(e.target.value);
+    setValues({ ...values, email: e.target.value });
   }
 
   useEffect(() => {
@@ -144,69 +102,26 @@ function Form() {
       timer.current = window.setTimeout(() => {
         setLoading(false);
         setSubmitted(true);
-      }, 3000);
+      }, 2000);
+      handleClear();
     }
   }
 
+  // after submission, input will be cleared
+  function handleClear() {
+    setValues({ fName: "", lName: "", desc: "", email: "" });
+    setImageUrl("");
+  }
+
   return (
-    <div className={styles.centered}>
+    <>
       {/* uploading form component */}
-      {loading && (
-        <div className={styles.overlay}>
-          <div className={styles.linearBar}>
-            <p className={styles.loadingTitle}>Uploading Form</p>
-            <LinearProgress />
-          </div>
-        </div>
-      )}
-
-      {submitted && (
-        <div className={styles.overlay}>
-          <Card
-            sx={{
-              width: "30%",
-              margin: "270px auto",
-              borderRadius: "10px",
-              boxShadow: "1px 4px 10px 1px #484848",
-            }}
-          >
-            <CardContent>
-              <Typography
-                className={styles.emailNoticeTitle}
-                variant="h6"
-                component="div"
-                sx={{
-                  display: "flex",
-                  fontFamily: "Ubuntu",
-                  fontWeight: "Bold",
-                  color: "#484848",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                Email Sent
-                <CloseIcon />
-              </Typography>
-
-              <Typography
-                sx={{
-                  fontFamily: "Ubuntu",
-                  color: "#484848",
-                  marginTop: "15px",
-                }}
-              >
-                🎉 Email is successfully sent, please check your inbox for the
-                form details.
-              </Typography>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <ProgressBar onLoad={loading} />
+      {/* prompt email is sent notice */}
+      <EmailNotice onSubmit={submitted} />
 
       {/* form component */}
-      <div className={styles.formTitle}>
-        <h2>Simple Form</h2>
-      </div>
+      <Header />
       <form className={styles.container} onSubmit={handleSubmit}>
         <div className={styles.name}>
           <TextField
@@ -242,15 +157,16 @@ function Form() {
             name="email"
             label="Email"
             fullWidth
-            value={email}
+            value={values.email}
             onChange={handleEmail}
           />
-          {error && <p className={styles.emailErr}>{error}</p>}
+          {emailError && <p className={styles.emailErr}>{emailError}</p>}
         </div>
 
+        {/* preview image */}
         {imageUrl && selectedImg && (
           <Box mt={2} textAlign="start">
-            <img src={imageUrl} alt={selectedImg.name} height="200px" />
+            <img src={imageUrl} alt={selectedImg} height="200px" />
           </Box>
         )}
 
@@ -270,7 +186,11 @@ function Form() {
             />
             <AddPhotoAlternateIcon />
           </IconButton>
-          {values.fName && values.lName && values.desc && email && !error ? (
+          {values.fName &&
+          values.lName &&
+          values.desc &&
+          values.email &&
+          !emailError ? (
             <Button variant="contained" type="submit">
               Send
             </Button>
@@ -281,7 +201,7 @@ function Form() {
           )}
         </div>
       </form>
-    </div>
+    </>
   );
 }
 
