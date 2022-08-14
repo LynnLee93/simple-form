@@ -31,7 +31,6 @@ function ProgressBar(props) {
 
   return (
     <div>
-      {/* uploading form component */}
       {props.onLoad && (
         <div className={styles.overlay}>
           <div className={styles.linearBar}>
